@@ -1,6 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <time.h>
+#include <ctype.h>
+
+
 
 #define MAX_BOOKS 100
 #define MAX_TITLE_LENGTH 100
@@ -64,7 +70,7 @@ int main()
             purchaseItem(books, numBooks, query);
             break;
         case 4:
-            printf("Enter the title, author, or publisher of the book to pay for: ");
+            printf("Enter the title, author, or publisher of the book to purchase and  pay for: ");
             scanf(" %[^\n]", query);
             payForItem(books, numBooks, query);
             break;
@@ -138,25 +144,61 @@ int searchForItem(const Book books[], int numBooks, const char* query)
     int matches[MAX_BOOKS];
     int numMatches = 0;
 
-    // Check for partial matches
+    // Convert query to lowercase and remove extra spaces
+    char lowercaseQuery[MAX_TITLE_LENGTH];
+    int j = 0;
+    for (int i = 0; query[i] != '\0'; i++)
+    {
+        if (query[i] != ' ' || (j > 0 && query[i-1] != ' '))   // Skip extra spaces
+        {
+            lowercaseQuery[j] = tolower(query[i]);
+            j++;
+        }
+    }
+    lowercaseQuery[j] = '\0';
+
+    // Check for partial matches (case-insensitive)
     for (int i = 0; i < numBooks; i++)
     {
-        if (strstr(books[i].title, query) != NULL || strstr(books[i].authors, query) != NULL ||
-                strstr(books[i].publisher, query) != NULL)
+        char lowercaseTitle[MAX_TITLE_LENGTH];
+        char lowercaseAuthors[MAX_AUTHOR_LENGTH];
+        char lowercasePublisher[MAX_PUBLISHER_LENGTH];
+        // Convert book fields to lowercase for comparison
+        for (int j = 0; books[i].title[j] != '\0'; j++)
+        {
+            lowercaseTitle[j] = tolower(books[i].title[j]);
+        }
+        lowercaseTitle[strlen(books[i].title)] = '\0';
+        for (int j = 0; books[i].authors[j] != '\0'; j++)
+        {
+            lowercaseAuthors[j] = tolower(books[i].authors[j]);
+        }
+        lowercaseAuthors[strlen(books[i].authors)] = '\0';
+        for (int j = 0; books[i].publisher[j] != '\0'; j++)
+        {
+            lowercasePublisher[j] = tolower(books[i].publisher[j]);
+        }
+        lowercasePublisher[strlen(books[i].publisher)] = '\0';
+
+        if (strstr(lowercaseTitle, lowercaseQuery) != NULL ||
+                strstr(lowercaseAuthors, lowercaseQuery) != NULL ||
+                strstr(lowercasePublisher, lowercaseQuery) != NULL)
         {
             matches[numMatches] = i;
             numMatches++;
         }
+
     }
 
     if (numMatches > 0)
     {
         printf("Found %d match(es):\n", numMatches);
-        printf("S/No   ISBN           Title                Authors            Publisher        Date of publication\n");
+        printf("S/No   ISBN           Title                Authors       Date of publication     Publisher        \n");
         for (int i = 0; i < numMatches; i++)
         {
             int index = matches[i];
-            printf("%d %s %s %s %s %s\n", index + 1, books[index].isbn, books[index].title,books[index].authors, books[index].publisher, books[index].date);
+            printf("%d  %s            %s                   %s             %s                      %s\n",
+                   index + 1, books[index].isbn, books[index].title,books[index].authors, books[index].publisher, books[index].date);
         }
     }
     else
@@ -171,11 +213,45 @@ void purchaseItem(Book books[], int numBooks, const char* query)
     int matches[MAX_BOOKS];
     int numMatches = 0;
 
-    // Check for partial matches
+    // Convert query to lowercase and remove extra spaces
+    char lowercaseQuery[MAX_TITLE_LENGTH];
+    int j = 0;
+    for (int i = 0; query[i] != '\0'; i++)
+    {
+        if (query[i] != ' ' || (j > 0 && query[i-1] != ' '))   // Skip extra spaces
+        {
+            lowercaseQuery[j] = tolower(query[i]);
+            j++;
+        }
+    }
+    lowercaseQuery[j] = '\0';
+
+    // Check for partial matches (case-insensitive)
     for (int i = 0; i < numBooks; i++)
     {
-        if (strstr(books[i].title, query) != NULL || strstr(books[i].authors, query) != NULL ||
-                strstr(books[i].publisher, query) != NULL)
+        char lowercaseTitle[MAX_TITLE_LENGTH];
+        char lowercaseAuthors[MAX_AUTHOR_LENGTH];
+        char lowercasePublisher[MAX_PUBLISHER_LENGTH];
+        // Convert book fields to lowercase for comparison
+        for (int j = 0; books[i].title[j] != '\0'; j++)
+        {
+            lowercaseTitle[j] = tolower(books[i].title[j]);
+        }
+        lowercaseTitle[strlen(books[i].title)] = '\0';
+        for (int j = 0; books[i].authors[j] != '\0'; j++)
+        {
+            lowercaseAuthors[j] = tolower(books[i].authors[j]);
+        }
+        lowercaseAuthors[strlen(books[i].authors)] = '\0';
+        for (int j = 0; books[i].publisher[j] != '\0'; j++)
+        {
+            lowercasePublisher[j] = tolower(books[i].publisher[j]);
+        }
+        lowercasePublisher[strlen(books[i].publisher)] = '\0';
+
+        if (strstr(lowercaseTitle, lowercaseQuery) != NULL ||
+                strstr(lowercaseAuthors, lowercaseQuery) != NULL ||
+                strstr(lowercasePublisher, lowercaseQuery) != NULL)
         {
             matches[numMatches] = i;
             numMatches++;
@@ -185,37 +261,44 @@ void purchaseItem(Book books[], int numBooks, const char* query)
     if (numMatches > 0)
     {
         printf("Found %d match(es):\n", numMatches);
-        printf("S/No   Title                         Authors                ISBN            Publisher        Date of publication\n");
+        printf("S/No  ISBN   Title   Authors   Date of publication  Publisher\n");
         for (int i = 0; i < numMatches; i++)
         {
             int index = matches[i];
-            printf("%-6d %-30s %-20s %-15s %-20s %s\n", index + 1, books[index].title, books[index].authors,
-                   books[index].isbn, books[index].publisher, books[index].date);
+            printf("%d  %s            %s                   %s             %s                      %s\n",
+                   index + 1, books[index].isbn, books[index].title,books[index].authors, books[index].publisher, books[index].date);
         }
 
+        bool validSelection = false;
         int selection;
-        printf("Enter the S/No of the book to purchase: ");
-        scanf("%d", &selection);
-
-        if (selection >= 1 && selection <= numMatches)
+        while (!validSelection)
         {
-            int index = matches[selection - 1];
-            printf("You have purchased the following book:\n");
-            printf("Title: %s\n", books[index].title);
-            printf("Author(s): %s\n", books[index].authors);
-            printf("ISBN: %s\n", books[index].isbn);
-            printf("Publisher: %s\n", books[index].publisher);
-            printf("Date of publication: %s\n", books[index].date);
+            printf("Enter the S/No of the book to purchase, in the listed S/No: ");
+            scanf("%d", &selection);
 
-            // Perform the purchase logic here
-            // ...
+            // Check if the selection is within the range of valid S/Nos
+            for (int i = 0; i < numMatches; i++)
+            {
+                if (selection == matches[i] + 1)
+                {
+                    validSelection = true;
+                    break;
+                }
+            }
 
-            printf("Purchase successful.\n");
+            if (!validSelection)
+            {
+                printf("Invalid S/No. Please enter a listed S/No: \n");
+            }
         }
-        else
-        {
-            printf("Invalid selection.\n");
-        }
+
+        int index = selection - 1;
+        printf("You have purchased the following book:\n");
+        printf("S/No ISBN  Title  Authors  Date of publication  Publisher\n");
+        printf("%d  %s            %s                   %s             %s                      %s\n",
+               index + 1, books[index].isbn, books[index].title,books[index].authors, books[index].publisher, books[index].date);
+
+        printf("Purchase successful.\n");
     }
     else
     {
@@ -225,57 +308,135 @@ void purchaseItem(Book books[], int numBooks, const char* query)
 
 void payForItem(Book books[], int numBooks, const char* query)
 {
-    int matches[MAX_BOOKS];
-    int numMatches = 0;
 
-    // Check for partial matches
-    for (int i = 0; i < numBooks; i++)
+
+int matches[MAX_BOOKS];
+int numMatches = 0;
+
+// Convert query to lowercase and remove extra spaces
+char lowercaseQuery[MAX_TITLE_LENGTH];
+int j = 0;
+for (int i = 0; query[i] != '\0'; i++)
+{
+    if (query[i] != ' ' || (j > 0 && query[i-1] != ' '))   // Skip extra spaces
     {
-        if (strstr(books[i].title, query) != NULL || strstr(books[i].authors, query) != NULL ||
-                strstr(books[i].publisher, query) != NULL)
+        lowercaseQuery[j] = tolower(query[i]);
+        j++;
+    }
+}
+lowercaseQuery[j] = '\0';
+
+// Check for partial matches (case-insensitive)
+for (int i = 0; i < numBooks; i++)
+{
+    char lowercaseTitle[MAX_TITLE_LENGTH];
+    char lowercaseAuthors[MAX_AUTHOR_LENGTH];
+    char lowercasePublisher[MAX_PUBLISHER_LENGTH];
+    // Convert book fields to lowercase for comparison
+    for (int j = 0; books[i].title[j] != '\0'; j++)
+    {
+        lowercaseTitle[j] = tolower(books[i].title[j]);
+    }
+    lowercaseTitle[strlen(books[i].title)] = '\0';
+    for (int j = 0; books[i].authors[j] != '\0'; j++)
+    {
+        lowercaseAuthors[j] = tolower(books[i].authors[j]);
+    }
+    lowercaseAuthors[strlen(books[i].authors)] = '\0';
+    for (int j = 0; books[i].publisher[j] != '\0'; j++)
+    {
+        lowercasePublisher[j] = tolower(books[i].publisher[j]);
+    }
+    lowercasePublisher[strlen(books[i].publisher)] = '\0';
+
+    if (strstr(lowercaseTitle, lowercaseQuery) != NULL ||
+            strstr(lowercaseAuthors, lowercaseQuery) != NULL ||
+            strstr(lowercasePublisher, lowercaseQuery) != NULL)
+    {
+        matches[numMatches] = i;
+        numMatches++;
+    }
+}
+
+if (numMatches > 0)
+{
+    printf("Found %d match(es):\n", numMatches);
+    printf("S/No   ISBN           Title                Authors              Date of publication      Publisher\n");
+    for (int i = 0; i < numMatches; i++)
+    {
+        int index = matches[i];
+        printf("%d  %s  %s     %s     %s         %s\n",
+               index + 1, books[index].isbn, books[index].title,books[index].authors, books[index].publisher, books[index].date);
+    }
+
+    bool validSelection = false;
+    int selection;
+    while (!validSelection)
+    {
+        printf("Enter the S/No of the book you want to purchase and pay for, in the listed S/No: ");
+        scanf("%d", &selection);
+
+        // Check if the selection is within the range of valid S/Nos
+        for (int i = 0; i < numMatches; i++)
         {
-            matches[numMatches] = i;
-            numMatches++;
+            if (selection == matches[i] + 1)
+            {
+                validSelection = true;
+                break;
+            }
+        }
+
+        if (!validSelection)
+        {
+            printf("Invalid S/No. Please enter a listed S/No: \n");
         }
     }
 
-    if (numMatches > 0)
+    int index = selection - 1;
+    printf("You have selected the following book:\n");
+    printf("S/No   ISBN           Title                Authors     Date of publication       Publisher        \n");
+    printf("%d  %s %s %s %s  %s\n",
+           index + 1, books[index].isbn, books[index].title,books[index].authors,books[index].date), books[index].publisher;
+
+    // Generate random price between 500 and 2500
+    srand(time(NULL));  // Initialize random seed
+    int price = rand() % 2001 + 500;
+    printf("The price of the selected book is: %d\n", price);
+
+    printf("Do you want to proceed with the payment? (Y/N): ");
+    char choice;
+    scanf(" %c", &choice);
+
+    if (choice == 'Y' || choice == 'y')
     {
-        printf("Found %d match(es):\n", numMatches);
-        printf("S/No   Title                         Authors                ISBN            Publisher        Date of publication\n");
-        for (int i = 0; i < numMatches; i++)
+        printf("Enter the amount of money you have: ");
+        int amount;
+        scanf("%d", &amount);
+
+        if (amount == price)
         {
-            int index = matches[i];
-            printf("%-6d %-30s %-20s %-15s %-20s %s\n", index + 1, books[index].title, books[index].authors,
-                   books[index].isbn, books[index].publisher, books[index].date);
-        }
-
-        int selection;
-        printf("Enter the S/No of the book to pay for: ");
-        scanf("%d", &selection);
-
-        if (selection >= 1 && selection <= numMatches)
-        {
-            int index = matches[selection - 1];
-            printf("You have paid for the following book:\n");
-            printf("Title: %s\n", books[index].title);
-            printf("Author(s): %s\n", books[index].authors);
-            printf("ISBN: %s\n", books[index].isbn);
-            printf("Publisher: %s\n", books[index].publisher);
-            printf("Date of publication: %s\n", books[index].date);
-
-            // Perform the payment logic here
-            // ...
-
             printf("Payment successful.\n");
+        }
+        else if (amount > price)
+        {
+            printf("Payment successful. Your change: %d\n", amount - price);
         }
         else
         {
-            printf("Invalid selection.\n");
+            printf("Payment failed. Remaining balance: %d\n", price - amount);
         }
     }
     else
     {
-        printf("No matches found.\n");
+        printf("Payment canceled.\n");
     }
+
+
+}
+else
+{
+    printf("No matches found.\n");
+}
+
+
 }
